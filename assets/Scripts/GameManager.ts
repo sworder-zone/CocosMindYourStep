@@ -1,4 +1,4 @@
-import { _decorator, Component, Prefab, instantiate, Node, CCInteger, Vec3 } from 'cc';
+import { _decorator, Component, Prefab, instantiate, Node, CCInteger, Vec3, Label } from 'cc';
 import {PlayerController} from "db://assets/Scripts/PlayerController";
 
 const { ccclass, property } = _decorator;
@@ -31,6 +31,9 @@ export class GameManager extends Component {
     @property({type: Node})
     public startMenu: Node | null = null;
 
+    @property({type: Label})
+    public stepsLabel: Label | null = null;
+
     start () {
         this.curState = GameState.GS_INIT;
 
@@ -38,6 +41,10 @@ export class GameManager extends Component {
     }
 
     onPlayerJumpEnd(moveIndex: number) {
+        if (this.stepsLabel) {
+            // 因为在最后一步可能出现步伐大的跳跃，但是此时无论跳跃是步伐大还是步伐小都不应该多增加分数
+            this.stepsLabel.string = '' + (moveIndex >= this.roadLength ? this.roadLength : moveIndex);
+        }
         this.checkResult(moveIndex);
     }
 
@@ -67,10 +74,11 @@ export class GameManager extends Component {
                 if (this.startMenu) {
                     this.startMenu.active = false;
                 }
-                // 设置 active 为 true 时会直接开始监听鼠标事件，此时鼠标抬起事件还未派发
-                // 会出现的现象就是，游戏开始的瞬间人物已经开始移动
-                // 因此，这里需要做延迟处理
-                setTimeout(() => {
+
+                if (this.stepsLabel) {
+                    this.stepsLabel.string = '0';   // 将步数重置为0
+                }
+                setTimeout(() => {      // 直接设置 active 会直接开始监听鼠标事件，这里做了延迟处理
                     if (this.playerCtrl) {
                         this.playerCtrl.setInputActive(true);
                     }
