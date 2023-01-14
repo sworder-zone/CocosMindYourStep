@@ -26,7 +26,15 @@ export class PlayerController extends Component {
     public BodyAnim: Animation | null = null;
 
     start() {
-        input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        // input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+    }
+
+    setInputActive(active: boolean) {
+        if (active) {
+            input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        } else {
+            input.off(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        }
     }
 
     onMouseUp(event: EventMouse) {

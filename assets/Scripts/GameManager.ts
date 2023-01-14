@@ -1,10 +1,18 @@
-import { _decorator, Component, Prefab, instantiate, Node, CCInteger } from 'cc';
+import { _decorator, Component, Prefab, instantiate, Node, CCInteger, Vec3 } from 'cc';
+import {PlayerController} from "db://assets/Scripts/PlayerController";
+
 const { ccclass, property } = _decorator;
 
 // 赛道格子类型，坑（BT_NONE）或者实路（BT_STONE）
 enum BlockType {
     BT_NONE,
     BT_STONE,
+};
+
+enum GameState{
+    GS_INIT,
+    GS_PLAYING,
+    GS_END,
 };
 
 @ccclass("GameManager")
@@ -17,9 +25,58 @@ export class GameManager extends Component {
     @property
     public roadLength = 50;
     private _road: BlockType[] = [];
+    @property({type: PlayerController})
+    public playerCtrl: PlayerController | null = null;
+
+    @property({type: Node})
+    public startMenu: Node | null = null;
 
     start () {
+        this.curState = GameState.GS_INIT;
+
+        // this.generateRoad();
+    }
+
+    init() {
+        // 激活主界面
+        if (this.startMenu) {
+            this.startMenu.active = true;
+        }
+        // 生成赛道
         this.generateRoad();
+        if(this.playerCtrl){
+            // 禁止接收用户操作人物移动指令
+            this.playerCtrl.setInputActive(false);
+            // 重置人物位置
+            this.playerCtrl.node.setPosition(Vec3.ZERO);
+        }
+    }
+
+    set curState (value: GameState) {
+        switch(value) {
+            case GameState.GS_INIT:
+                this.init();
+                break;
+            case GameState.GS_PLAYING:
+                if (this.startMenu) {
+                    this.startMenu.active = false;
+                }
+                // 设置 active 为 true 时会直接开始监听鼠标事件，此时鼠标抬起事件还未派发
+                // 会出现的现象就是，游戏开始的瞬间人物已经开始移动
+                // 因此，这里需要做延迟处理
+                setTimeout(() => {
+                    if (this.playerCtrl) {
+                        this.playerCtrl.setInputActive(true);
+                    }
+                }, 0.1);
+                break;
+            case GameState.GS_END:
+                break;
+        }
+    }
+
+    onStartButtonClicked() {
+        this.curState = GameState.GS_PLAYING;
     }
 
     generateRoad() {
