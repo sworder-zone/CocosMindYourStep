@@ -34,7 +34,11 @@ export class GameManager extends Component {
     start () {
         this.curState = GameState.GS_INIT;
 
-        // this.generateRoad();
+        this.playerCtrl?.node.on('JumpEnd', this.onPlayerJumpEnd, this);
+    }
+
+    onPlayerJumpEnd(moveIndex: number) {
+        this.checkResult(moveIndex);
     }
 
     init() {
@@ -49,6 +53,8 @@ export class GameManager extends Component {
             this.playerCtrl.setInputActive(false);
             // 重置人物位置
             this.playerCtrl.node.setPosition(Vec3.ZERO);
+
+            this.playerCtrl.reset();
         }
     }
 
@@ -122,6 +128,17 @@ export class GameManager extends Component {
         }
 
         return block;
+    }
+
+    checkResult(moveIndex: number) {
+        if (moveIndex < this.roadLength) {
+            // 跳到了坑上
+            if (this._road[moveIndex] == BlockType.BT_NONE) {
+                this.curState = GameState.GS_INIT;
+            }
+        } else {    // 跳过了最大长度
+            this.curState = GameState.GS_INIT;
+        }
     }
 
     // update (deltaTime: number) {

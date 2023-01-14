@@ -25,6 +25,8 @@ export class PlayerController extends Component {
     @property({type: Animation})
     public BodyAnim: Animation | null = null;
 
+    private _curMoveIndex = 0;
+
     start() {
         // input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
     }
@@ -63,6 +65,12 @@ export class PlayerController extends Component {
         this._curJumpSpeed = this._jumpStep / this._jumpTime;
         this.node.getPosition(this._curPos);
         Vec3.add(this._targetPos, this._curPos, new Vec3(this._jumpStep, 0, 0));
+
+        this._curMoveIndex += step;
+    }
+
+    onOnceJumpEnd() {
+        this.node.emit('JumpEnd', this._curMoveIndex);
     }
 
     update(deltaTime: number) {
@@ -72,6 +80,7 @@ export class PlayerController extends Component {
                 // end
                 this.node.setPosition(this._targetPos);
                 this._startJump = false;
+                this.onOnceJumpEnd();
             } else {
                 // tween
                 this.node.getPosition(this._curPos);
@@ -80,6 +89,10 @@ export class PlayerController extends Component {
                 this.node.setPosition(this._curPos);
             }
         }
+    }
+
+    reset() {
+        this._curMoveIndex = 0;
     }
 }
 
