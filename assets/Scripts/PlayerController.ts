@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, input, Input, EventMouse, Animation } from 'cc';
+import { _decorator, Component, Node, Vec3, input, Input, EventMouse, Animation, SkeletalAnimation } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -22,10 +22,10 @@ export class PlayerController extends Component {
     // 角色目标位置
     private _targetPos: Vec3 = new Vec3();
 
-    @property({type: Animation})
-    public BodyAnim: Animation | null = null;
-
     private _curMoveIndex = 0;
+
+    @property({type: SkeletalAnimation})
+    public CocosAnim: SkeletalAnimation|null = null;
 
     start() {
         // input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
@@ -52,13 +52,7 @@ export class PlayerController extends Component {
         if (this._startJump) {
             return;
         }
-        if (this.BodyAnim) {
-            if (step === 1) {
-                this.BodyAnim.play('oneStep');
-            } else if (step === 2) {
-                this.BodyAnim.play('twoStep');
-            }
-        }
+
         this._startJump = true;
         this._jumpStep = step;
         this._curJumpTime = 0;
@@ -66,10 +60,18 @@ export class PlayerController extends Component {
         this.node.getPosition(this._curPos);
         Vec3.add(this._targetPos, this._curPos, new Vec3(this._jumpStep, 0, 0));
 
+        if (this.CocosAnim) {
+            this.CocosAnim.getState('cocos_anim_jump').speed = 3.5; // 跳跃动画时间比较长，这里加速播放
+            this.CocosAnim.play('cocos_anim_jump'); // 播放跳跃动画
+        }
+
         this._curMoveIndex += step;
     }
 
     onOnceJumpEnd() {
+        if (this.CocosAnim) {
+            this.CocosAnim.play('cocos_anim_idle');
+        }
         this.node.emit('JumpEnd', this._curMoveIndex);
     }
 
