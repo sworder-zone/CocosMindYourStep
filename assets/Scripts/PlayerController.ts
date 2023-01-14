@@ -22,6 +22,9 @@ export class PlayerController extends Component {
     // 角色目标位置
     private _targetPos: Vec3 = new Vec3();
 
+    @property({type: Animation})
+    public BodyAnim: Animation | null = null;
+
     start() {
         input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
     }
@@ -38,6 +41,13 @@ export class PlayerController extends Component {
     jumpByStep(step: number) {
         if (this._startJump) {
             return;
+        }
+        if (this.BodyAnim) {
+            if (step === 1) {
+                this.BodyAnim.play('oneStep');
+            } else if (step === 2) {
+                this.BodyAnim.play('twoStep');
+            }
         }
         this._startJump = true;
         this._jumpStep = step;
