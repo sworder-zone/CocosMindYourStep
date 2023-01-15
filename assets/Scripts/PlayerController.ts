@@ -1,4 +1,15 @@
-import { _decorator, Component, Node, Vec3, input, Input, EventMouse, Animation, SkeletalAnimation } from 'cc';
+import {
+    _decorator,
+    Component,
+    Node,
+    Vec3,
+    input,
+    Input,
+    EventMouse,
+    EventTouch,
+    Animation,
+    SkeletalAnimation
+} from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -24,8 +35,8 @@ export class PlayerController extends Component {
 
     private _curMoveIndex = 0;
 
-    @property({type: SkeletalAnimation})
-    public CocosAnim: SkeletalAnimation|null = null;
+    @property({ type: SkeletalAnimation })
+    public CocosAnim: SkeletalAnimation | null = null;
 
     start() {
         // input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
@@ -34,8 +45,10 @@ export class PlayerController extends Component {
     setInputActive(active: boolean) {
         if (active) {
             input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+            input.on(Input.EventType.TOUCH_END, this.onTouchMove, this);
         } else {
             input.off(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+            input.off(Input.EventType.TOUCH_END, this.onTouchMove, this);
         }
     }
 
@@ -46,6 +59,14 @@ export class PlayerController extends Component {
             this.jumpByStep(2);
         }
 
+    }
+
+    onTouchMove(event: EventTouch) {
+        if (event.touch.getLocationX() - event.touch.getStartLocation().x < 500) {
+            this.jumpByStep(1);
+        } else {
+            this.jumpByStep(2);
+        }
     }
 
     jumpByStep(step: number) {
